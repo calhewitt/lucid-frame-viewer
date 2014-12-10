@@ -1,124 +1,101 @@
 #!/usr/bin/python
 
 import sys
-import binascii
-import numpy as np
+from binascii import hexlify
+import numpy as np 
 from datetime import datetime
 import Image
 import Tkinter as tk
 import ImageTk
-import tkMessageBox
 
+def tohex(binary):
+	return hexlify(binary).upper()
+
+def get_channel_id(marker):
+	if marker == "C1":
+		return 0
+	elif marker == "C2":
+		return 1
+	elif marker == "C4":
+		return 2
+	elif marker == "C8":
+		return 3
+	else:
+		return 4
 
 filename = sys.argv[1]
 
-with open(filename, 'rb') as f:
-    content = f.read()
+f = open(filename, 'r')
 
-hex_dump = str(binascii.hexlify(content)).upper()
-
-# Clear vars as soon as possible, having lots of copies open kills memory
-del content
-
-# Check whether start of header file exists
-if (not hex_dump[0:4] == "DCCC") and not "--forcebadheader" in sys.argv:
-	print "File does not appear to have a well formed header. Exitting."
+if tohex(f.read(2)) != "DCCC":
+	print "Invalid data file"
 	sys.exit(1)
 
-frames = hex_dump.split("DCDF")
+header = tohex(f.read(14))
+
+active_detectors = format(int(header[0:2], 16), 'b').zfill(8)[3:]
+num_active_detectors = 0
+for char in active_detectors:
+	if char == '1':
+		num_active_detectors += 1
+
+print num_active_detectors, "detectors active"
+
+# 2 bytes for each pixel
+channel_length = (256*256*2) + 1
+frame_length = (channel_length * num_active_detectors) + 7
 
 
-# First 'frame' is header
-header = frames[0]
-del frames[0]
-
-# TODO read this from header
-num_active_detectors = 3
-
-frame_timestamps = {}
-
-
-del hex_dump
-
-def get_channels(index): # Returns list of channels
-	frame = frames[index]
-	timestamp = frame[0:10]
-	frame_timestamps[index] = timestamp	
-	frame = frame[10:]
-
+# Reads frame from file and creates a numpy array of pixels for each channel
+# Returns arrays and timestamp
+def get_frame(index):
 	channels = [None, None, None, None, None]
-	length_of_channel = len(frame) / num_active_detectors
+
+	f.seek(16 + (frame_length * index))
+	frame_header = tohex(f.read(7))[4:]
+	timestamp = int(frame_header[0:8], 16)
 
 	for i in range(num_active_detectors):
-		channel = frame[length_of_channel * i: length_of_channel * (i + 1)]
-		detector_id = channel[0:2]
-		channel = channel[2:]
-		index = 4
-		if detector_id == "C1":
-			index = 0
-		elif detector_id == "C2":
-			index = 1
-		elif detector_id == "C4":
-			index = 2
-		elif detector_id == "C8":
-			index = 3
-		channels[index] = channel
+		channel_id = get_channel_id(tohex(f.read(1)))
+		pixels = np.zeros((256, 256))
 
+		for x in range(0, 256):
+			for y in range(0, 256):
+				pixel = bin(int(tohex(f.read(2)), 16))[2:].zfill(16)
+				# First 2 bits are always 10 - pixel is only 14 bits long
+				pixel = float(int(pixel[2:], 2))
+				pixel = (pixel / 11810) * 256
+				pixels[x][y] = pixel
+		channels[channel_id] = pixels
+	return (channels, timestamp)
 
-	del frame
-	return channels
-
-
-def get_frame(frame_index, channel_index): # Returns np array of pixels
-	frame = get_channels(frame_index)
-
-	channel = frame[channel_index]
-
-	if channel == None:
-		return np.zeros((256, 256))
-
-	pixels = np.zeros((256, 256))
-
-	for x in range(0, 256):
-		for y in range(0, 256):
-			index = ((x * 256) + y) * 4
-			pixel = channel[index:index+4]
-
-			# Convert to binary to trim off meta bits
-			scale = 16 # hexadecimal
-			binary = bin(int(pixel, scale))[2:]
-			binary = binary[2:]
-			c_value = float(int(binary, 2))
-			c_value = c_value / 11810 # Saturated value
-			c_value *= 255
-
-			pixels[x][y] =  c_value
-
-	return pixels
-
-
-# Uses image.show
-def get_image(frame):
-
+def get_image(pixels):
 	im = Image.new("L", (256, 256), "black")
 	im_pixels = im.load()
 
 	for x in range(0, 256):
 		for y in range(0, 256):
-			im_pixels[x, y] = int(frame[x][y])
 
-	#im = im.resize((512, 512))
+			im_pixels[x, y] = int(pixels[x][y])
 	return im
 
-index = 0
+def update_window(index):
+	global root, in_main_loop
+	frame = get_frame(index)
+	label_image = [None, None, None, None, None]
+	img = [None, None, None, None, None]
+	for i in range(5):
+		if not frame[0][i] == None:
+			img[i] = ImageTk.PhotoImage(get_image(frame[0][i]))
+			label_image[i] = tk.Label(root, image=img[i])
+			label_image[i].place(x=(256*i) + 5*(i+1) ,y=5,width=256,height=256)
+	frame_label_text.set("Frame " + str(index + 1))
+	timestamp = frame[1]
+	dt = datetime.fromtimestamp(timestamp).strftime("%d-%m-%Y %H:%M:%S")
+	timestamp_label_text.set("Frame timestamp: " + dt)
+	if not in_main_loop:
+		root.mainloop()
 
-try:
-	index = int(sys.argv[2]) - 1
-except:
- 	print "Integer index not supplied"
-
-
-# Functions run when keys pressed in window
 def leftKey(arg):
 	global index
 	if index > 0:
@@ -127,17 +104,19 @@ def leftKey(arg):
 def rightKey(arg):
 	global index
 	#print "right"
-	if index < len(frames):
-		index += 1
-		update_window(index)
+	index += 1
+	update_window(index)
+
+try:
+	index = int(sys.argv[2])
+except:
+	index = 0
 
 
 root = tk.Tk()
 root.geometry("1310x420")
-#root.configure(background="#dddddd")
 root.title("LUCID Frame Viewer: " + filename)
 root.resizable(0, 0)
-# Bind keypresses
 root.bind('<Left>', leftKey)
 root.bind('<Right>', rightKey)
 
@@ -151,35 +130,8 @@ frame_label.place(x = 10, y = 350)
 timestamp_label = tk.Label(root, textvariable=timestamp_label_text, font = (None, 11))
 timestamp_label.place(x = 10, y = 370)
 
-frame_label_text.set("Frame " + str(index + 1) + " of " + str(len(frames)))
-timestamp_label_text.set("Frame timestamp: ")
-
-def update_window(index):
-	global v
-	global in_main_loop
-	label_image = [0, 0, 0, 0, 0]
-	img = [0, 0, 0, 0, 0]
-
-	for i in range(0, 5):
-		frame = get_frame(index, i)
-		img[i] = ImageTk.PhotoImage(get_image(frame))
-		label_image[i] = tk.Label(root, image=img[i])
-		label_image[i].place(x=(256*i) + 5*(i+1) ,y=5,width=256,height=256)
-		del frame
-
-	frame_label_text.set("Frame " + str(index + 1) + " of " + str(len(frames)))
-	timestamp = frame_timestamps[index]
-	unix_time = timestamp[0:8]
-	sub_second = timestamp[8:]
-	unix_time = float(int(unix_time, 16))
-	dt = datetime.fromtimestamp(unix_time).strftime("%d-%m-%Y %H:%M:%S")
-	timestamp = dt
-	timestamp_label_text.set("Frame timestamp: " + timestamp)
-
-	if not in_main_loop:
-		root.mainloop()
-		in_main_loop = True
-
 in_main_loop = False
+update_window(0)
 
-update_window(index)
+
+f.close()
