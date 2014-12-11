@@ -34,7 +34,7 @@ def update_window(index):
 			img[i] = ImageTk.PhotoImage(get_image(frame.channels[i]))
 			label_image[i] = tk.Label(root, image=img[i])
 			label_image[i].place(x=(256*i) + 5*(i+1) ,y=5,width=256,height=256)
-	frame_label_text.set("Frame " + str(index + 1))
+	frame_label_text.set("Frame " + str(index + 1) + " of " + str(lucidfile.num_frames))
 	timestamp = frame.timestamp
 	dt = datetime.fromtimestamp(timestamp).strftime("%d-%m-%Y %H:%M:%S")
 	timestamp_label_text.set("Frame timestamp: " + dt)
@@ -49,8 +49,9 @@ def leftKey(arg):
 def rightKey(arg):
 	global index
 	#print "right"
-	index += 1
-	update_window(index)
+	if index < lucidfile.num_frames:
+		index += 1
+		update_window(index)
 
 try:
 	index = int(sys.argv[2])
