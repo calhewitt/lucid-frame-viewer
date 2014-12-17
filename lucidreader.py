@@ -6,6 +6,7 @@ import os
 from binascii import hexlify
 import numpy as np 
 from datetime import datetime
+import Image
 
 
 def tohex(binary):
@@ -30,6 +31,7 @@ class LucidFrame:
 	pass
 
 class LucidFile:
+
 	def __init__(self, filename):
 
 		self.f = open(filename, 'r')
@@ -41,10 +43,12 @@ class LucidFile:
 		header = tohex(self.f.read(14))
 
 		active_detectors = format(int(header[0:2], 16), 'b').zfill(8)[3:]
+		self.active_detectors = [False, False, False, False, False]
 		self.num_active_detectors = 0
-		for char in active_detectors:
-			if char == '1':
+		for i in range(5):
+			if active_detectors[i] == '1':
 				self.num_active_detectors += 1
+				self.active_detectors[4 - i] = True
 
 		# 2 bytes for each pixel
 		self.frame_length = (CHANNEL_LENGTH * self.num_active_detectors) + 7

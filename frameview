@@ -1,9 +1,13 @@
 #!/usr/bin/python
 
 import sys
+import os
 from lucidreader import LucidFile 
+import lucidreader
+import frameplot
 import numpy as np 
 from datetime import datetime
+import noisemask
 import Image
 import Tkinter as tk
 import ImageTk
@@ -14,24 +18,18 @@ try:
 except:
 	print "That file does not exist or cannot be read"
 
-def get_image(pixels):
-	im = Image.new("L", (256, 256), "black")
-	im_pixels = im.load()
-
-	for x in range(0, 256):
-		for y in range(0, 256):
-
-			im_pixels[x, y] = int(pixels[x][y])
-	return im
-
 def update_window(index):
 	global root, in_main_loop
 	frame = lucidfile.get_frame(index)
+
+	if do_noise_mask:
+		frame = noisemask.apply_noise_mask(noise_mask, frame)
+
 	label_image = [None, None, None, None, None]
 	img = [None, None, None, None, None]
 	for i in range(5):
 		if not frame.channels[i] == None:
-			img[i] = ImageTk.PhotoImage(get_image(frame.channels[i]))
+			img[i] = ImageTk.PhotoImage(frameplot.get_image(frame.channels[i]))
 			label_image[i] = tk.Label(root, image=img[i])
 			label_image[i].place(x=(256*i) + 5*(i+1) ,y=5,width=256,height=256)
 	frame_label_text.set("Frame " + str(index + 1) + " of " + str(lucidfile.num_frames))
@@ -61,6 +59,14 @@ except:
 
 root = tk.Tk()
 root.geometry("1310x420")
+
+apply_noise_mask = False
+if "--noisemask" in sys.argv:
+	print "Generating noise mask"
+	noise_mask = noisemask.generate_noise_mask(lucidfile, 10)
+	do_noise_mask = True
+	print noise_mask
+
 root.title("LUCID Frame Viewer: " + filename)
 root.resizable(0, 0)
 root.bind('<Left>', leftKey)
