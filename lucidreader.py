@@ -37,8 +37,7 @@ class LucidFile:
 		self.f = open(filename, 'r')
 
 		if tohex(self.f.read(2)) != "DCCC":
-			print "Invalid data file"
-			sys.exit(1)
+			raise Exception("Invalid data file")
 
 		header = tohex(self.f.read(14))
 
@@ -80,5 +79,4 @@ class LucidFile:
 		r_value.timestamp = timestamp
 		return r_value
 
-	def __del__(self):
-		self.f.close()
+

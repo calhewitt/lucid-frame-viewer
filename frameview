@@ -12,11 +12,17 @@ import Image
 import Tkinter as tk
 import ImageTk
 
+
 try:
 	filename = sys.argv[1]
 	lucidfile = LucidFile(filename)
+
+except IOError:
+	print "The file specified does not exist or cannot be read. Exiting..."
+	sys.exit(1)
 except:
-	print "That file does not exist or cannot be read"
+	print "The data file specified is invalid (probably missing a header). Exitting."
+	sys.exit(1)
 
 def update_window(index):
 	global root, in_main_loop
