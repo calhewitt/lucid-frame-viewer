@@ -2,10 +2,10 @@
 
 import sys
 import os
-from lucidreader import LucidFile 
+from lucidreader import LucidFile
 import lucidreader
 import frameplot
-import numpy as np 
+import numpy as np
 from datetime import datetime
 import noisemask
 import Image
@@ -60,7 +60,7 @@ except:
 root = tk.Tk()
 root.geometry("1310x420")
 
-apply_noise_mask = False
+do_noise_mask = False
 if "--noisemask" in sys.argv:
 	print "Generating noise mask"
 	noise_mask = noisemask.generate_noise_mask(lucidfile, 10)
