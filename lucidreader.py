@@ -1,7 +1,6 @@
 # Module to parse raw LUCID data files
 # Part of the LUCID frame reader
 
-import sys
 import os
 from binascii import hexlify
 import numpy as np 
@@ -24,14 +23,12 @@ def get_channel_id(marker):
 	else:
 		return 4
 		
-
 CHANNEL_LENGTH = (256*256*2) + 1
 
 class LucidFrame:
 	pass
 
 class LucidFile:
-
 	def __init__(self, filename):
 
 		self.f = open(filename, 'r')
@@ -53,7 +50,6 @@ class LucidFile:
 		self.frame_length = (CHANNEL_LENGTH * self.num_active_detectors) + 7
 		# Calculate number of frames
 		self.num_frames = (os.path.getsize(filename) - 16) / self.frame_length
-
 
 	def get_frame(self, index):
 		channels = [None, None, None, None, None]
@@ -78,5 +74,3 @@ class LucidFile:
 		r_value.channels = channels
 		r_value.timestamp = timestamp
 		return r_value
-
-

@@ -11,12 +11,15 @@ import noisemask
 import Image
 import Tkinter as tk
 import ImageTk
+import tds1_telemetry as telemetry
 
+if len(sys.argv) < 2:
+	print "USAGE: frameview filename (--noisemask)"
+	sys.exit(1)
 
 try:
 	filename = sys.argv[1]
 	lucidfile = LucidFile(filename)
-
 except IOError:
 	print "The file specified does not exist or cannot be read. Exiting..."
 	sys.exit(1)
@@ -42,6 +45,13 @@ def update_window(index):
 	timestamp = frame.timestamp
 	dt = datetime.fromtimestamp(timestamp).strftime("%d-%m-%Y %H:%M:%S")
 	timestamp_label_text.set("Frame timestamp: " + dt)
+	#Get TDS1 Position and plot map
+	position = telemetry.get_position("TDS1.tle", timestamp)
+	map_img = ImageTk.PhotoImage(telemetry.get_map(position.latitude, position.longitude))
+	map_label = tk.Label(root, image = map_img, bg = "#333333")
+	map_label.place(x = 940, y = 276)
+	
+	# Start main loop if not already running
 	if not in_main_loop:
 		root.mainloop()
 
@@ -64,7 +74,7 @@ except:
 
 
 root = tk.Tk()
-root.geometry("1310x420")
+root.geometry("1310x466")
 
 do_noise_mask = False
 if "--noisemask" in sys.argv:
@@ -78,18 +88,19 @@ root.resizable(0, 0)
 root.bind('<Left>', leftKey)
 root.bind('<Right>', rightKey)
 
+bottom_frame = tk.Frame(root, bg = "#333333", width = 1310, height = 200)
+bottom_frame.place(x = 0, y = 266)
+
 frame_label_text = tk.StringVar()
 timestamp_label_text = tk.StringVar()
 
-file_label = tk.Label(root, text="File: " + filename, font=(None, 15))
+file_label = tk.Label(root, text="File: " + filename, font=(None, 15), bg = "#333333", fg = "#ffffff")
 file_label.place(x = 10, y = 320)
-frame_label = tk.Label(root, textvariable=frame_label_text, font = (None, 11))
+frame_label = tk.Label(root, textvariable=frame_label_text, font = (None, 11), bg = "#333333", fg = "#ffffff")
 frame_label.place(x = 10, y = 350)
-timestamp_label = tk.Label(root, textvariable=timestamp_label_text, font = (None, 11))
+timestamp_label = tk.Label(root, textvariable=timestamp_label_text, font = (None, 11), bg = "#333333", fg = "#ffffff")
 timestamp_label.place(x = 10, y = 370)
 
 in_main_loop = False
+
 update_window(0)
-
-
-f.close()
