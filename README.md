@@ -22,7 +22,7 @@ To enable noise masking, run the program with the --noisemask argument, eg.
 ./frameview datafile.ldat --noisemask
 ```
 
-The noise mask is computed, for the best balance between accuracy and performance, the first 10 frames of the data file. 
+The noise mask is computed, for the best balance between accuracy and performance, from the first 10 frames of the data file. 
 
 ## Requirements
 
