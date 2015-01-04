@@ -31,3 +31,7 @@ The noise mask is computed, for the best balance between accuracy and performanc
 * PyEphem (for computing the satellite's position)
 * PIL (for plotting frames)
 * Tkinter
+
+## Getting new Telemetry Data
+
+The frame viewer uses telemetry data from the SpaceTrack API to compute positions, and after time this will become inaccurate. To update the data, run the get_tle script from the terminal.
