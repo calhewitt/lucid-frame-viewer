@@ -45,11 +45,11 @@ class LucidFile:
 			if active_detectors[i] == '1':
 				self.num_active_detectors += 1
 				self.active_detectors[4 - i] = True
-
 		# 2 bytes for each pixel
 		self.frame_length = (CHANNEL_LENGTH * self.num_active_detectors) + 7
 		# Calculate number of frames
 		self.num_frames = (os.path.getsize(filename) - 16) / self.frame_length
+		self.config = header[20:].decode("hex")[::-1]
 
 	def get_frame(self, index):
 		channels = [None, None, None, None, None]

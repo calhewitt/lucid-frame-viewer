@@ -27,6 +27,11 @@ except:
 	print "The data file specified is invalid (probably missing a header). Exitting."
 	sys.exit(1)
 
+# Display a zoomed version of a frame image
+def zoom(event, image):
+	image = image.resize((512, 512))
+	image.show()
+
 def update_window(index):
 	global root, in_main_loop
 	frame = lucidfile.get_frame(index)
@@ -36,11 +41,16 @@ def update_window(index):
 
 	label_image = [None, None, None, None, None]
 	img = [None, None, None, None, None]
+
 	for i in range(5):
 		if not frame.channels[i] == None:
-			img[i] = ImageTk.PhotoImage(frameplot.get_image(frame.channels[i]))
+			image = frameplot.get_image(frame.channels[i])
+			img[i] = ImageTk.PhotoImage(image)
 			label_image[i] = tk.Label(root, image=img[i])
+			label_image[i].bind("<Double-1>", 
+				lambda event, arg=image: zoom(event, arg))
 			label_image[i].place(x=(256*i) + 5*(i+1) ,y=5,width=256,height=256)
+
 	frame_label_text.set("Frame " + str(index + 1) + " of " + str(lucidfile.num_frames))
 	timestamp = frame.timestamp
 	dt = datetime.fromtimestamp(timestamp).strftime("%d-%m-%Y %H:%M:%S")
@@ -96,10 +106,13 @@ timestamp_label_text = tk.StringVar()
 
 file_label = tk.Label(root, text="File: " + filename, font=(None, 15), bg = "#333333", fg = "#ffffff")
 file_label.place(x = 10, y = 320)
+config_label = tk.Label(root, text="Config file: " + lucidfile.config, font = (None, 11), bg = "#333333", fg = "#ffffff")
+config_label.place(x = 10, y = 350)
 frame_label = tk.Label(root, textvariable=frame_label_text, font = (None, 11), bg = "#333333", fg = "#ffffff")
-frame_label.place(x = 10, y = 350)
+frame_label.place(x = 10, y = 370)
 timestamp_label = tk.Label(root, textvariable=timestamp_label_text, font = (None, 11), bg = "#333333", fg = "#ffffff")
-timestamp_label.place(x = 10, y = 370)
+timestamp_label.place(x = 10, y = 390)
+
 
 in_main_loop = False
 
