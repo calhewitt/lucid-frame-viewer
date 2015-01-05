@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+# LUCID Frame Viewer
+# This module manages the GUI of the program, event handlers etc.
+
 import sys
 import os
 from lucidreader import LucidFile
@@ -11,6 +14,7 @@ import noisemask
 import Image
 import Tkinter as tk
 import ImageTk
+import tkFileDialog
 import tds1_telemetry as telemetry
 
 if len(sys.argv) < 2:
@@ -23,6 +27,19 @@ try:
 except IOError:
 	print "The file specified does not exist or cannot be read. Exiting..."
 	sys.exit(1)
+
+def load_file(new_filename):
+	global lucidfile, filename
+	ad = lucidfile.num_active_detectors
+	lucidfile = LucidFile(new_filename, ad)
+	filename = os.path.basename(new_filename)
+	update_gui()
+	update_window(0)
+
+def open_file(args):
+	global filename
+	filename = tkFileDialog.askopenfilename()
+	load_file(filename)
 
 # Display a zoomed version of a frame image
 def zoom(event, image):
@@ -63,6 +80,11 @@ def update_window(index):
 	if not in_main_loop:
 		root.mainloop()
 
+def update_gui():
+	file_label_text.set("File: " + filename)
+	config_label_text.set("Config file: " + lucidfile.config)
+	root.title("LUCID Frame Viewer: " + filename)
+
 def leftKey(arg):
 	global index
 	if index > 0:
@@ -91,7 +113,6 @@ if "--noisemask" in sys.argv:
 	do_noise_mask = True
 	print noise_mask
 
-root.title("LUCID Frame Viewer: " + filename)
 root.resizable(0, 0)
 root.bind('<Left>', leftKey)
 root.bind('<Right>', rightKey)
@@ -102,10 +123,13 @@ bottom_frame.place(x = 0, y = 266)
 frame_label_text = tk.StringVar()
 timestamp_label_text = tk.StringVar()
 coordinates_label_text = tk.StringVar()
+file_label_text = tk.StringVar()
+config_label_text = tk.StringVar()
 
-file_label = tk.Label(root, text="File: " + filename, font=(None, 15), bg = "#333333", fg = "#ffffff")
+# Update GUI labels when a new file is loaded
+file_label = tk.Label(root, textvariable=file_label_text, font=(None, 15), bg = "#333333", fg = "#ffffff")
 file_label.place(x = 10, y = 320)
-config_label = tk.Label(root, text="Config file: " + lucidfile.config, font = (None, 11), bg = "#333333", fg = "#ffffff")
+config_label = tk.Label(root, textvariable=config_label_text, font = (None, 11), bg = "#333333", fg = "#ffffff")
 config_label.place(x = 10, y = 350)
 frame_label = tk.Label(root, textvariable=frame_label_text, font = (None, 11), bg = "#333333", fg = "#ffffff")
 frame_label.place(x = 10, y = 370)
@@ -113,6 +137,12 @@ timestamp_label = tk.Label(root, textvariable=timestamp_label_text, font = (None
 timestamp_label.place(x = 10, y = 390)
 coordinates_label = tk.Label(root, textvariable=coordinates_label_text, font = (None, 11), bg = "#333333", fg = "#ffffff")
 coordinates_label.place(x = 10, y = 410)
+
+open_file_button = tk.Label(root, text="Open File", font=(None, 11), bg = "#333333", fg = "#ffffff")
+open_file_button.bind("<Button-1>", open_file)
+open_file_button.place(x = 10, y = 280)
+
+update_gui()
 
 in_main_loop = False
 

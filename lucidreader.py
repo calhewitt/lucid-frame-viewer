@@ -28,7 +28,7 @@ class LucidFrame:
 	pass
 
 class LucidFile:
-	def __init__(self, filename):
+	def __init__(self, filename, num_active_detectors = None):
 
 		self.f = open(filename, 'r')
 
@@ -54,7 +54,10 @@ class LucidFile:
 				byte1 = byte2
 				byte2 = tohex(self.f.read(1))
 			self.ignore_length = self.f.tell() - 2
-			self.num_active_detectors = input("Enter the number of active detectors: ")
+			if num_active_detectors == None:
+				self.num_active_detectors = input("Enter the number of active detectors: ")
+			else:
+				self.num_active_detectors = num_active_detectors
 
 		# 2 bytes for each pixel
 		self.frame_length = (CHANNEL_LENGTH * self.num_active_detectors) + 7
