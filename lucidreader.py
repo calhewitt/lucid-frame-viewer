@@ -7,7 +7,6 @@ import numpy as np
 from datetime import datetime
 import Image
 
-
 def tohex(binary):
 	return hexlify(binary).upper()
 
@@ -33,28 +32,38 @@ class LucidFile:
 
 		self.f = open(filename, 'r')
 
-		if tohex(self.f.read(2)) != "DCCC":
-			raise Exception("Invalid data file")
+		if tohex(self.f.read(2)) == "DCCC":
+			self.ignore_length = 16
+			header = tohex(self.f.read(14))
 
-		header = tohex(self.f.read(14))
+			active_detectors = format(int(header[0:2], 16), 'b').zfill(8)[3:]
+			self.active_detectors = [False, False, False, False, False]
+			self.num_active_detectors = 0
+			for i in range(5):
+				if active_detectors[i] == '1':
+					self.num_active_detectors += 1
+					self.active_detectors[4 - i] = True
+			self.config = header[20:].decode("hex")[::-1]
 
-		active_detectors = format(int(header[0:2], 16), 'b').zfill(8)[3:]
-		self.active_detectors = [False, False, False, False, False]
-		self.num_active_detectors = 0
-		for i in range(5):
-			if active_detectors[i] == '1':
-				self.num_active_detectors += 1
-				self.active_detectors[4 - i] = True
+		else:
+			# Workaround for files missing a header
+			print "Warning: The data file is missing a header. It could be invalid."
+			self.config = "Unknown"
+			byte1, byte2 = "", ""
+			while not (byte1 == "DC" and byte2 == "DF"):
+				byte1 = byte2
+				byte2 = tohex(self.f.read(1))
+			self.ignore_length = self.f.tell() - 2
+			self.num_active_detectors = input("Enter the number of active detectors: ")
+
 		# 2 bytes for each pixel
 		self.frame_length = (CHANNEL_LENGTH * self.num_active_detectors) + 7
-		# Calculate number of frames
-		self.num_frames = (os.path.getsize(filename) - 16) / self.frame_length
-		self.config = header[20:].decode("hex")[::-1]
+		self.num_frames = (os.path.getsize(filename) - self.ignore_length) / self.frame_length
 
 	def get_frame(self, index):
 		channels = [None, None, None, None, None]
 
-		self.f.seek(16 + (self.frame_length * index))
+		self.f.seek(self.ignore_length + (self.frame_length * index))
 		frame_header = tohex(self.f.read(7))[4:]
 		timestamp = int(frame_header[0:8], 16)
 

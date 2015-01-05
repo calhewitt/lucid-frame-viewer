@@ -23,10 +23,7 @@ try:
 except IOError:
 	print "The file specified does not exist or cannot be read. Exiting..."
 	sys.exit(1)
-except:
-	print "The data file specified is invalid (probably missing a header). Exitting."
-	sys.exit(1)
-
+	
 # Display a zoomed version of a frame image
 def zoom(event, image):
 	image = image.resize((512, 512))
