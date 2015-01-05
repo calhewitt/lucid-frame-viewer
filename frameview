@@ -23,7 +23,7 @@ try:
 except IOError:
 	print "The file specified does not exist or cannot be read. Exiting..."
 	sys.exit(1)
-	
+
 # Display a zoomed version of a frame image
 def zoom(event, image):
 	image = image.resize((512, 512))
@@ -41,7 +41,7 @@ def update_window(index):
 
 	for i in range(5):
 		if not frame.channels[i] == None:
-			image = frameplot.get_image(frame.channels[i])
+			image = frameplot.get_image(frame.channels[i], "RGB")
 			img[i] = ImageTk.PhotoImage(image)
 			label_image[i] = tk.Label(root, image=img[i])
 			label_image[i].bind("<Double-1>", 
