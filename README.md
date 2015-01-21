@@ -6,31 +6,47 @@ A frame viewer for raw data files from the LUCID experiment.
 
 ## Installation and Usage
 
-To use the viewer, simply clone the repository, install the required libraries listed below and run the frameview program with the name of a data file as the first argument:
+### Installation Instructions
 
-```
-git clone https://github.com/calhewitt/lucid-frame-viewer
-cd lucid-frame-viewer
-./frameview datafile.ldat
-```
+To use the viewer you will need the following Python 2 libraries to be installed:
 
-### Noise Masking
-
-To enable noise masking, run the program with the --noisemask argument, eg.
-
-```
-./frameview datafile.ldat --noisemask
-```
-
-The noise mask is computed, for the best balance between accuracy and performance, from the first 10 frames of the data file. 
-
-## Requirements
-
-* Python 2.7
 * NumPy
-* PyEphem (for computing the satellite's position)
-* PIL (for plotting frames)
-* Tkinter
+* Tkinter, with imaging support
+* PIL
+* PyEphem
+
+Or in the terminal:
+
+```
+$ sudo apt-get install python-numpy python-tk python-imaging python-imaging-tk
+$ sudo pip install ephem
+```
+
+Then clone the repository...
+
+```
+$ git clone https://github.com/calhewitt/lucid-frame-viewer
+```
+
+Finally, add the viewer to your PATH so it can be run from anywhere (replace ~/lucid-frame-viewer with wherever you downloaded the repo to):
+
+```
+$ PATH=$PATH:~/lucid-frame-viewer
+```
+
+### Usage
+
+To start the viewer on a file, simply run
+
+```
+$ frameview datafile.ldat
+```
+
+If you need noise masking to be enabled, run the viewer with the *noisemask* option, eg:
+
+```
+$ frameview datafile.ldat --noisemask
+```
 
 ## Getting new Telemetry Data
 
