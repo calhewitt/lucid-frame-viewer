@@ -28,6 +28,12 @@ Then clone the repository...
 $ git clone https://github.com/calhewitt/lucid-frame-viewer
 ```
 
+Make the *frameview* file executable, so it can be run as a program:
+
+```
+$ chmod +x frameview
+```
+
 Finally, add the viewer to your PATH so it can be run from anywhere (replace ~/lucid-frame-viewer with wherever you downloaded the repo to):
 
 ```
@@ -36,10 +42,15 @@ $ PATH=$PATH:~/lucid-frame-viewer
 
 ### Usage
 
-To start the viewer on a file, simply run
+To start the viewer on a file, simply run (replacing datafile.ldat with the filename)
 
 ```
 $ frameview datafile.ldat
+```
+
+Or from within the folder, if you have not added the script to the $PATH:
+
+``` $./frameview datafile.ldat
 ```
 
 If you need noise masking to be enabled, run the viewer with the *noisemask* option, eg:
