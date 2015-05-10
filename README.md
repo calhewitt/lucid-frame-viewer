@@ -14,6 +14,7 @@ To use the viewer you will need the following Python 2 libraries to be installed
 * Tkinter, with imaging support
 * PIL
 * PyEphem
+* lucid_utils, see [http://github.com/calhewitt/lucid_utils](http://github.com/calhewitt/lucid_utils)
 
 Or in the terminal:
 
@@ -58,6 +59,8 @@ If you need noise masking to be enabled, run the viewer with the *noisemask* opt
 ```
 $ frameview datafile.ldat --noisemask
 ```
+
+*Note: the viewer may start very slowly on uncompressed data files missing a header, this is to be expected*
 
 ## Getting new Telemetry Data
 
