@@ -70,7 +70,7 @@ def update_window(index):
 	dt = datetime.fromtimestamp(timestamp).strftime("%d-%m-%Y %H:%M:%S")
 	timestamp_label_text.set("Frame timestamp: " + dt)
 	#Get TDS1 Position and plot map
-	position = telemetry.get_position("TDS1.tle", timestamp)
+	position = telemetry.get_position("tds1.txt", timestamp)
 	coordinates_label_text.set("Lat: " + str(round(position.latitude, 2)) + " Lng: " + str(round(position.longitude, 2)))
 	map_img = ImageTk.PhotoImage(telemetry.get_map(position.latitude, position.longitude))
 	map_label = tk.Label(root, image = map_img, bg = "#333333")
