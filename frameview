@@ -5,17 +5,17 @@
 
 import sys
 import os
-from lucidreader import LucidFile
-import lucidreader
-import frameplot
+from lucid_utils.lucidreader import LucidFile
+import lucid_utils.lucidreader
+from lucid_utils import frameplot
 import numpy as np
 from datetime import datetime
-import noisemask
+from lucid_utils import noisemask
 import Image
 import Tkinter as tk
 import ImageTk
 import tkFileDialog
-import tds1_telemetry as telemetry
+from lucid_utils import telemetry
 
 if len(sys.argv) < 2:
 	print "USAGE: frameview filename (--noisemask)"
