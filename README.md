@@ -51,7 +51,8 @@ $ frameview datafile.ldat
 
 Or from within the folder, if you have not added the script to the $PATH:
 
-``` $./frameview datafile.ldat
+``` 
+$ ./frameview datafile.ldat
 ```
 
 If you need noise masking to be enabled, run the viewer with the *noisemask* option, eg:
