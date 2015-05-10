@@ -14,7 +14,7 @@ To use the viewer you will need the following Python 2 libraries to be installed
 * Tkinter, with imaging support
 * PIL
 * PyEphem
-* lucid_utils, see [http://github.com/calhewitt/lucid_utils](http://github.com/calhewitt/lucid_utils)
+* lucid_utils, see [http://github.com/calhewitt/lucid-utils](http://github.com/calhewitt/lucid-utils)
 
 Or in the terminal:
 
